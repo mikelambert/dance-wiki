@@ -1,3 +1,8 @@
+BGAEWiki
+
+- Python 2.7 ready
+- Bootstrap Mobile first
+
 gae-wiki 1.2
 
 - Fixed a bug with /w/changes in open-reading wikis.

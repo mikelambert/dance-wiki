@@ -1,14 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Images{% if settings.wiki_title %} — {{ settings.wiki_title|escape }}{% endif %}{% endblock %}
+{% block title %}Uploads{% if settings.wiki_title %} — {{ settings.wiki_title|escape }}{% endif %}{% endblock %}
 {% block content %}
-<ul id="tabs">
-  <li class="active"><a href="/w/image/list">List</a></li>
-  <li><a href="/w/image/upload">Upload</a></li>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="/w/image/list"><span class="glyphicon glyphicon-th-list"></span> List</a></li>
+  <li><a href="/w/image/upload"><span class="glyphicon glyphicon-upload"></span> Upload</a></li>
 </ul>
-<div class="wtabs extl" id="pb">
-  <h1>Uploaded images</h1>
+  <h1>Uploaded files</h1>
   {% if images %}
-    <table id="imglist">
+    <table class="table">
       <thead>
         <tr>
           <th/>

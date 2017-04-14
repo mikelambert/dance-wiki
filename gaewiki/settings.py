@@ -8,13 +8,13 @@ from google.appengine.api import memcache
 
 SETTINGS_PAGE_NAME = 'gaewiki:settings'
 
-DEFAULT_SETTINGS = """wiki_title: Dance Wiki
+DEFAULT_SETTINGS = """wiki_title: My Wiki
 start_page: Welcome
-admin_email: dancedeets@dancedeets.com
+admin_email: nobody@example.com
 sidebar: gaewiki:sidebar
 footer: gaewiki:footer
 open-reading: yes
-open-editing: yes
+open-editing: no
 editors: user1@example.com, user2@example.com
 interwiki-google: http://www.google.com/search?q=%s
 interwiki-wp: http://en.wikipedia.org/wiki/Special:Search?search=%s

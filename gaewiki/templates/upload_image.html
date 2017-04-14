@@ -1,18 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Upload an image{% if settings.wiki_title %} — {{ settings.wiki_title|escape }}{% endif %}{% endblock %}
+{% block title %}Upload a file{% if settings.wiki_title %} — {{ settings.wiki_title|escape }}{% endif %}{% endblock %}
 {% block content %}
-<ul id="tabs">
-  <li><a href="/w/image/list">List</a></li>
-  <li class="active"><a href="/w/image/upload">Upload</a></li>
+<ul class="nav nav-tabs" role="tablist">
+  <li><a href="/w/file/list"><span class="glyphicon glyphicon-th-list"></span> List</a></li>
+  <li class="active"><a href="/w/image/upload"><span class="glyphicon glyphicon-upload"></span> Upload</a></li>
 </ul>
-<div class="wtabs extl" id="pb">
-  <h1>Uploading an image</h1>
-  <p>Please select an image file not larger than 2MB.</p>
+  <h1>Uploading a file</h1>
+  <p class="alert alert-info" role="alert">Please select a file not larger than 2MB.</p>
   <form method="post" action="{{ submit_url }}" enctype="multipart/form-data">
     <div>
       <input type="file" name="file" accept="image/*"/>
     </div>
-    <button>Upload</button>
+    <br><button> Upload</button>
   </form>
 </div>
 {% endblock %}

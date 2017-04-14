@@ -36,9 +36,8 @@ indexes:
   - name: updated
     direction: desc
 
-# To support page UUIDs
-- kind: WikiRevision
+- kind: WikiUpload
   properties:
-  - name: uuid
-  - name: created
+  - name: is_latest
+  - name: filename
     direction: desc

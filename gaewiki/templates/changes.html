@@ -1,16 +1,13 @@
 {% extends "base.html" %}
 {% block title %}Recent changes{% endblock %}
 {% block content %}
-<ul id="tabs">
+  <ul class="nav nav-tabs" role="tablist">
 <li class="active"><a href="/w/changes">View</a></li>
 <li><a href="/w/changes.rss">RSS</a></li>
 </ul>
-
-<div id="pb" class="wtabs">
 <h1>Recent changes</h1>
-
 {% if pages %}
-<table class="c">
+<table class="table">
   <thead>
     <tr>
       <th>Page</th>
@@ -22,7 +19,7 @@
     {% for page in pages %}
       <tr>
         <td>
-          <a class="int{% if page.pread %} public{% endif %}" href="{{ page.title|pageurl }}">{{ page.title|escape }}</a>
+          <a {% if page.pread %} public{% endif %}" href="{{ page.title|pageurl }}">{{ page.title|escape }}</a>
         </td>
         <td>
           {{ page.updated|timezone|date:"Y/m/d H:i:s" }}

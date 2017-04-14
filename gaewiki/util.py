@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # encoding=utf-8
 
 import cgi
@@ -5,6 +6,7 @@ import logging
 import os
 import re
 import urllib
+import math
 
 import markdown
 import model
@@ -68,8 +70,6 @@ def wikify_one(pat, real_page_title):
     page_name = page_title = pat.group(1)
     if "|" in page_name:
         page_name, page_title = page_name.split("|", 1)
-    elif '/' in page_name:
-        page_title = page_name.split('/')[-1]
 
     # interwiki
     if ':' in page_name:
@@ -85,6 +85,8 @@ def wikify_one(pat, real_page_title):
                 return list_pages_by_label('gaewiki:parent:' + (parts[1] or real_page_title))
             elif parts[0] == 'Image':
                 return render_image(parts[1].split(";"), page_title)
+            elif parts[0] == 'File':
+                return render_file(parts[1].split(";"), page_title)
             iwlink = settings.get(u'interwiki-' + parts[0])
             if iwlink:
                 return '<a class="iw iw-%s" href="%s" target="_blank">%s</a>' % (parts[0], iwlink.replace('%s', urllib.quote(parts[1].encode('utf-8'))), page_title)
@@ -109,7 +111,10 @@ def wikify_one(pat, real_page_title):
     }
 
 
-def render_image(args, title):
+def render_image_old(args, title):
+    """
+    delete this once the new renderer is ready
+    """
     key = args[0]
     size = None
     crop = False
@@ -135,6 +140,41 @@ def render_image(args, title):
 
     return "<a href='/w/image/view?key=%s' title='%s'><img %s/></a>" % (img.get_key(), title, attrs)
 
+def render_image(args, title):
+    key = args[0]
+    size = None
+    crop = False
+    align = None
+
+    if not title:
+        title = 'Click to view image details'
+
+    for arg in args[1:]:
+        if arg.startswith("size="):
+            size = int(arg[5:])
+        elif arg == "crop":
+            crop = True
+        elif arg in ("left", "right"):
+            align = arg
+
+    img = model.WikiUpload.get_by_name(key)
+    if not img:
+        img = model.WikiUpload.get_by_key(key)
+    if not img:
+        return "<code>Can't find image %s.</code>" % key
+
+    return img.get_html("Image", title, size, crop, align)
+
+
+
+def render_file(args, title):
+    upload = model.WikiUpload.get_by_name(title)
+    if not upload:
+        upload = model.WikiUpload.get_by_key(title)
+    if upload:
+        return '<a href="/w/file/view/%s">%s</a> <small>(%s)</small>' % (cgi.escape(upload.short_key, True), cgi.escape(upload.filename), upload.size_fmt)
+    else:
+        return '<a href="/w/file/upload" class="missing">%s</a>' % cgi.escape(title)
 
 def list_pages_by_label(label):
     """Returns a formatted list of pages with the specified label."""
@@ -149,7 +189,7 @@ def list_pages_by_label(label):
     items = []
     for page in pages:
         page_name = page.redirect or page.title
-        items.append(u'<li><a class="int" href="%(url)s" title="%(hint)s">%(title)s</a></li>' % {
+        items.append(u'<li class="list-group-item"><a href="%(url)s" title="%(hint)s">%(title)s</a></li>' % {
             "url": pageurl(page_name),
             "hint": cgi.escape(page_name),
             "title": page.get_property('display_title', page.title),
@@ -158,7 +198,7 @@ def list_pages_by_label(label):
     if not items:
         return ""
 
-    return u'<ul class="labellist">%s</ul>' % u''.join(items)
+    return u'<ul class="list-group">%s</ul>' % u''.join(items)
 
 
 def process_special_token(text, page_name):
@@ -272,3 +312,18 @@ def extract_links(text):
             links.append(link)
 
     return links
+
+
+unit_list = zip(['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'], [0, 0, 1, 2, 2, 2])
+def sizeof_fmt(num):
+    """Human friendly file size"""
+    if num > 1:
+        exponent = min(int(math.log(num, 1024)), len(unit_list) - 1)
+        quotient = float(num) / 1024**exponent
+        unit, num_decimals = unit_list[exponent]
+        format_string = '{:.%sf} {}' % (num_decimals)
+        return format_string.format(quotient, unit)
+    if num == 0:
+        return '0 bytes'
+    if num == 1:
+        return '1 byte'

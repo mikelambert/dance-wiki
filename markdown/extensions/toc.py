@@ -21,7 +21,7 @@ class TocTreeprocessor(markdown.treeprocessors.Treeprocessor):
 
     def run(self, doc):
         div = etree.Element("div")
-        div.attrib["class"] = "toc"
+        div.attrib["class"] = "alert alert-info"
         last_li = None
 
         # Add title to the div

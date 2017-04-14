@@ -1,35 +1,21 @@
 {% extends "base.html" %}
 {% block title %}{{ page_title|escape }}{% endblock %}
 {% block content %}
-<ul id="tabs">
-  <li><a href="{{ page_title|pageurl }}">View</a></li>
+<ul class="nav nav-tabs" role="tablist">
+  <li><a href="{{ page_title|pageurl }}"><span class="glyphicon glyphicon-eye-open"></span> View</a></li>
   {% if can_edit %}
-  <li><a href="/w/edit?page={{ page_title|uurlencode }}">Edit</a></li>
+  <li><a href="/w/edit?page={{ page_title|uurlencode }}"><span class="glyphicon glyphicon-pencil"></span> Edit</a></li>
   {% endif %}
-  <li class="active"><a href="/w/history?page={{ page_title|uurlencode }}">History</a></li>
+  <li class="active"><a href="/w/history?page={{ page_title|uurlencode }}"><span class="glyphicon glyphicon-circle-arrow-left"></span> History</a></li>
 </ul>
-<div id="pb" class="wtabs">
 <h1>{{ page_title|escape }}</h1>
-<p>The following revisions are available:</p>
-<form method="GET" action="/w/diff/"><table class="c">
-  <thead><tr>
-	<th></th><th></th>
-	<th>Revision Date</th>
-	<th>Revision Comment</th>
-  </tr></thead>
-  <tbody><tr>
-	<td></td>
-    <td><input checked="checked" id="r2" name="r2" type="radio" value=""></td>
-    <td><a class="int" href="{{ page_title|pageurl }}">{{ page.updated|timezone|date:"Y/m/d H:i:s"}}</a></td>
-    <td><a class="int" href="{{ page_title|pageurl }}">{% if page.comment %}{{ page.comment }}{% else %}(current revision){% endif %}</a></td>
-  </tr>
-{% for revision in revisions %}
-  <tr>
-	<td><input {% if forloop.first %}checked="checked" {% endif %}id="r1-{{ revision.key }}" name="r1" type="radio" value="{{ revision.key }}"></td>
-	<td>{% if not forloop.last %}<input id="r2-{{ revision.key }}" name="r2" type="radio" value="{{ revision.key }}">{% endif %}</td>
-    <td><a class="int" href="{{ page_title|pageurl }}?r={{ revision.key }}">{{ revision.created|timezone|date:"Y/m/d H:i:s"}}</a></td>
-    <td><a class="int" href="{{ page_title|pageurl }}?r={{ revision.key }}">{% if revision.comment %}{{ revision.comment }}{% else %}(none){% endif %}</a></td>
-  </tr>
-{% endfor %}</tbody></table><input type="submit" value="diff" /></form>
+{% if revisions %}
+  <p class="alert alert-info" role="alert">The following revisions are available:</p>
+  <ul class="list-group">{% for revision in revisions %}
+    <li class="list-group-item"><a href="{{ page_title|pageurl }}?r={{ revision.key }}">Revision from <span class="badge">{{ revision.created|timezone|date:"Y/m/d H:i:s"}}</span></a></li>
+  {% endfor %}</ul>
+{% else %}
+<p class="alert alert-info" role="alert">We have no records for this page.</p>
+{% endif %}
 </div>
 {% endblock %}

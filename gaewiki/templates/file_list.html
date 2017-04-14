@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Uploads{% if settings.wiki_title %} — {{ settings.wiki_title|escape }}{% endif %}{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="/w/file/list"><span class="glyphicon glyphicon-th-list"></span> List</a></li>
+  <li><a href="/w/file/upload"><span class="glyphicon glyphicon-upload"></span> Upload</a></li>
+</ul>
+  <h1>Uploaded files</h1>
+  {% if files %}
+    <div  class="table-responsive">
+      <form action="/w/file/delete" method="post" class="theform">
+        <table class="table">
+          <thead>
+            <tr>
+              <th/>
+              <th/>
+              <th>File name</th>
+              <th>Uploaded on</th>
+              <th>Size</th>
+              <th>Content type</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for file in files %}
+            <tr>
+            {% if is_admin %}
+              <td><input name="short_key" value="{{ file.short_key }}" type="checkbox"/></td>
+            {% else %}
+              <td/>
+            {% endif %}
+              <td>{% if file.is_image %}<img alt="thumbnail" src="{{ file.thumb_url }}" width="25" height="25"/>{% endif %}
+              {% if file.is_video %}<i class="glyphicon glyphicon-facetime-video" style="width: 25px; height: 25px;">{% endif %}
+              {% if file.is_audio %}<i class="glyphicon glyphicon-volume-up" style="width: 25px; height: 25px;">{% endif %}
+              </td>
+              <td><a href="/w/file/view/{{ file.short_key }}">{{ file.filename|escape }}</a></td>
+              <td>{{ file.created }}</td>
+              <td>{{ file.size_fmt }}</td>
+              <td><code>{{ file.get_code|escape }}</code></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% if is_admin %}<input id="delete_btn" class="btn btn-primary" name="delete" value="Delete" type="submit" />{%  endif %}
+      </form>
+
+
+    </div>
+  {% else %}
+    <p>No images were uploaded.</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_scripts %}
+    <!-- this came from extra scripts block -->
+    <script>
+        $(document).ready(function() {
+          $("#delete_btn").click(function(event) {
+                if( !confirm('Are you sure that you want to submit the form') )
+                    event.preventDefault();
+          });
+        });
+    </script>
+{% endblock %}

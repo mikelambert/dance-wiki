@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ file.filename|escape }}{% if settings.wiki_title %} — {{ settings.wiki_title|escape }}{% endif %}{% endblock %}
+{% block content %}
+<ul class="nav nav-tabs" role="tablist">
+  <li class="active"><a href="#"><span class="glyphicon glyphicon-eye-open"></span> View</a></li>
+  <li><a href="/w/file/list"><span class="glyphicon glyphicon-th-list"></span> List</a></li>
+  <li><a href="/w/file/upload"><span class="glyphicon glyphicon-upload"></span> Upload</a></li>
+</ul>
+  <h1>{{ file.filename|escape }} <small>{{ file.size_fmt }}</small></h1>
+     <nav class="navbar navbar-default">
+        <ul class="nav navbar-nav">
+        <li class="active"><a href="{{ file.get_url|escape }}" download="{{ file.filename|escape }}"><i class="glyphicon glyphicon-download"></i> Download</a></li>
+        </ul>
+        <p class="navbar-text">This file was uploaded on <strong>{{ file.created }}</strong></p>
+    </nav>
+  {% if file.is_video %}
+      {% if file.is_latest %}
+      <p>Wiki code to embed this video: <code>[[Video:{{ file.filename|escape }}]]</code> or <code>[[Video:{{ file.short_key }}]]</code></p>
+      <p>If you upload a different video with the same file name, the first code will show the new video. Second code, with id as a reference will show this version of the video.</p>
+      {% else %}
+      <p>Wiki code to embed this video: <code>[[Video:{{ file.short_key }}]]</code></p>
+      {% endif %}
+      <video controls="">
+          <source src="{{ file.get_url }}" type="{{ file.content_type|escape }}">
+      </video>
+  {% endif %}
+  {% if file.is_audio %}
+      {% if file.is_latest %}
+      <p>Wiki code to embed this audio file: <code>[[Audio:{{ file.filename|escape }}]]</code> or <code>[[Audio:{{ file.short_key }}]]</code></p>
+      <p>If you upload a different audio file with the same file name, the first code will play the new file. Second code, with id as a reference will play this version of the audio.</p>
+      {% else %}
+      <p>Wiki code to embed this audio file: <code>[[Audio:{{ file.short_key }}]]</code></p>
+      {% endif %}
+      <audio src="{{ file.get_url }}" controls></audio>
+  {% endif %}
+  {% if file.is_image %}
+      <p><img src="{{ file.get_url }}" class="img-responsive"></p>
+      {% if file.is_latest %}
+      <p>Wiki code to embed this image: <code>[[Image:{{ file.filename|escape }}]]</code> or <code>[[Image:{{ file.short_key }}]]</code></p>
+      <p>If you upload a different image with the same file name, the first code will show the new image. Second code, with id as a reference will show this version of the image.</p>
+      {% else %}
+      <p>Wiki code to embed this image: <code>[[Image:{{ file.short_key }}]]</code></p>
+      {% endif %}
+  {% endif %}
+
+</div>
+{% endblock %}

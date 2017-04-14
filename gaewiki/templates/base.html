@@ -1,13 +1,20 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-      <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
       {% if settings.extra_styles %}
         {% for style in settings.extra_styles %}
           <link rel="stylesheet" type="text/css" href="{{ style|escape }}"/>
         {% endfor %}
       {% else %}
-        <link rel="stylesheet" type="text/css" href="/gae-wiki-static/style.css"/>
+    <link href="/gae-wiki-static/scripts/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom styles for this template -->
+    <link href="/gae-wiki-static/scripts/css/wiki.css" rel="stylesheet">
       {% endif %}
         <!--[if gte IE 6]>
       {% if settings.extra_ie_styles %}
@@ -33,49 +40,105 @@
         <script type="text/javascript">{{ settings.extra_init_script }}</script>
       {% endif %}
     </head>
+
     <body>
     	{% block header %}
-      <div id="header">
-        <div class="top">
-          <div class="login">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse, .navbar-menu">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">{{ settings.wiki_title|escape }}</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
             {% if user %}
-              <strong><a href="/w/profile">{{ user.get_nickname|escape }}</a></strong>
-              <a href="/w/index">Index</a>
-              <a href="/w/changes">Changes</a>
+              <li><a href="/w/profile"><strong><span class="glyphicon glyphicon-user"></span> {{ user.get_nickname|escape }}</strong></a></li>
+              <li><a href="/w/index"><span class="glyphicon glyphicon-folder-open"></span> Index</a>
+              <li><a href="/w/changes"><span class="glyphicon glyphicon-list"></span> Changes</a></li>
               {% if is_admin %}
-                <a href="/w/users">Users</a>
+                <li><a href="/w/users"><span class="glyphicon glyphicon-globe"></span> Users</a></li>
               {% endif %}
-                <a href="{{ log_out_url|escape }}">Sign out</a>
+                <li><a href="{{ log_out_url|escape }}"><span class="glyphicon glyphicon-log-out"></span> Sign out</a></li>
             {% else %}
-              <div align="right"><a href="{{ log_in_url|escape }}">Log in</a></div>
+              <li><a href="{{ log_in_url|escape }}"><span class="glyphicon glyphicon-log-in"></span> Log in</a></li>
             {% endif %}
+           </ul>
+        </div>
+       <div class="navbar-menu collapse">
+	<div class="row">
+	  <div class="col-xs-6"><a href="/gaewiki:sidebar" class="btn btn-success btn-block btn-sm" role="button">Menu</a></div>
+	  <div class="col-xs-6"><a href="/w/backlinks?page={{ page.title|uurlencode }}" class="btn btn-info btn-block btn-sm" role="button">Pages that link here</a></div>
+	</div>
+	<br><br>
+       </div>
+      </div>
+    </div>
+    	{% endblock %}
+    {% if sidebar %}
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+        {{ sidebar|wikify|safe }}
+        <ul class="nav nav-sidebar">
+        {% if page.is_saved %}
+        {% endif %}
+            <h4><span class="glyphicon glyphicon-briefcase"></span> Tools</h4>
+            <li><a href="/w/backlinks?page={{ page.title|uurlencode }}">Pages that link here</a></li>
+            <li><a href="#" id="helpLink">Markup Help</a></li>
+          </ul>
           </div>
         </div>
       </div>
-    	{% endblock %}
-    {% if sidebar %}
-      <div id="sidebar">
-        {{ sidebar|wikify|safe }}
-        {% if page.is_saved %}
-          <div class="tools">
-            <h3>Tools</h3>
-            <ul>
-              <li><a href="/w/backlinks?page={{ page.title|uurlencode }}">Pages that link here</a></li>
-            </ul>
-          </div>
-        {% endif %}
-      </div>
     {% endif %}
-    <div id="page">
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
       {% block content %}{% endblock %}
     </div>
 		{% block footer %}
-      <div id="footer">
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <div class="well well-sm">
         {% if page.is_saved %}
         <p id="pm">This {% if revision %}revision was added{% else %}page was last edited{% endif %} {% if page.author.get_nickname %}by <a href="/user%3A{{ page.author.get_nickname|uurlencode }}">{{ page.author.get_nickname|escape }}</a>{% else %}anonymously{% endif %} on {{ page.updated|timezone|date:"Y/m/d H:i:s" }}.</p>
         {% endif %}
         {% if footer %}{{ footer|wikify|safe }}{% endif %}
+        </div>
       </div>
 		{% endblock %}
-    </body>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/gae-wiki-static/scripts/btstrp/jquery.min.js"></script>
+    <script src="/gae-wiki-static/scripts/btstrp/bootstrap.min.js"></script>
+    <script src="/gae-wiki-static/scripts/btstrp/docs.min.js"></script>
+    <script>
+        // this is to set class of <ul> of a sidebar div...
+        $(document).ready(function() {
+            $("div.sidebar").children('ul').addClass("nav nav-sidebar");
+            $("#helpLink").click(function() {
+               $("#helpModalLong").modal('show');
+            })
+        });
+    </script>
+    {% block extra_scripts %}<!-- page-specific scripts can go here... -->{% endblock %}
+    <!-- Modal -->
+<div class="modal fade" id="helpModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Wiki Markup Syntaxis<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></h5>
+      </div>
+      <div class="modal-body">
+          {{ syntax|wikify_page|safe }}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+  </body>
 </html>

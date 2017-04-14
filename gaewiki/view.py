@@ -1,9 +1,8 @@
+# -*- coding: utf-8 -*-
 # encoding=utf-8
 
 import logging
 import os
-import difflib
-from urllib import quote
 
 from django.utils import simplejson
 from google.appengine.api import users
@@ -14,17 +13,18 @@ import access
 import model
 import settings
 import util
+import syntax
 
 
 DEFAULT_LABEL_BODY = u"""name: %(title)s
 ---
 # %(title)s
 
-Pages in this category:
+<p class="alert alert-info">Pages in this category:</p>
 
 [[List:%(label)s]]
 
-_This is an automatically generated page._
+_<p class="alert alert-info">This is an automatically generated page.</p>_
 """
 
 
@@ -35,9 +35,9 @@ def render(template_name, data):
     if 'user' not in data:
         data['user'] = model.WikiUser.get_or_create(users.get_current_user())
     if data['user']:
-        data['log_out_url'] = users.create_logout_url(quote(os.environ['PATH_INFO']))
+        data['log_out_url'] = users.create_logout_url(os.environ['PATH_INFO'])
     else:
-        data['log_in_url'] = users.create_login_url(quote(os.environ['PATH_INFO']))
+        data['log_in_url'] = users.create_login_url(os.environ['PATH_INFO'])
     if 'is_admin' not in data:
         data['is_admin'] = users.is_current_user_admin()
     if 'sidebar' not in data:
@@ -48,6 +48,8 @@ def render(template_name, data):
         data['settings'] = settings.get_all()
     if 'base' not in data:
         data['base'] = util.get_base_url()
+    if 'syntax' not in data:
+        data['syntax'] = syntax.get_page()
     return template.render(filename, data)
 
 
@@ -57,7 +59,7 @@ def get_sidebar():
     if page.is_saved():
         body = page.body
     else:
-        body = u'<a href="/"><img src="/gae-wiki-static/logo-186.png" width="186" alt="logo" height="167"/></a>\n\nThis is a good place for a brief introduction to your wiki, a logo and such things.\n\n[Edit this text](/w/edit?page=%s)' % page_name
+        body = u'\n\n<h4>This sidebar is used as menu, place your wiki links inside a list with these html tags:</h4>\n\n<code><\\ul class="nav"><\li></code>\n\n<code>[&#173;[SAMPLE_LINK_TO_PAGE]]</code>\n\n<code><\/li><\/ul></code>\n\n[<ul class="nav"><li>Edit the menu</li></ul>](/w/edit?page=%s)' % page_name
     return body
 
 
@@ -67,7 +69,7 @@ def get_footer():
     if page.is_saved():
         body = page.body
     else:
-        body = u'This wiki is built with [GAEWiki](http://gaewiki.googlecode.com/).'
+        body = u'[BGAEWiki](https://github.com/BauweBijl/bgaewiki) by [Bauwe Bijl](http://www.bauwe.nl)'
     return body
 
 
@@ -101,33 +103,17 @@ def view_page(page, user=None, is_admin=False, revision=None):
     return render('view_page.html', data)
 
 
-def edit_page(page, comment=None):
+def edit_page(page):
     logging.debug(u'Editing page "%s"' % page.title)
     return render('edit_page.html', {
         'page': page,
-        'comment': comment,
     })
 
 
 def list_pages(pages):
     logging.debug(u'Listing %u pages.' % len(pages))
-    def link_line(title):
-        return ('    ' * title.count('/')) + '- ' + ('[' + title + '](/' + title + ')' if ':' in title else '[[' + title + ']]')
-    lines = []
-    for page in pages:
-        title = page.title
-        if '/' in title:
-            parent = title[:title.rfind('/')]
-            if not lines or lines[-1][0] != parent:
-                parent_path = parent.split('/')
-                for depth in xrange(1, len(parent_path)+1):
-                    target = '/'.join(parent_path[:depth])
-                    if not lines or not lines[-1][0].startswith(target):
-                        lines.append((target, link_line(target)))
-        lines.append((title, link_line(title)))
     return render('index.html', {
         'pages': pages,
-        'html': util.wikify(util.parse_markdown('\n'.join(line[1] for line in lines))),
     })
 
 
@@ -141,7 +127,6 @@ def list_pages_feed(pages):
 def show_page_history(page, user=None, is_admin=False):
     return render('history.html', {
         'page_title': page.title,
-        'page': page,
         'revisions': page.get_history(),
         'can_edit': access.can_edit_page(page.title, user, is_admin),
     })
@@ -263,6 +248,15 @@ def view_image(img, user, is_admin):
     return render("view_image.html", data)
 
 
+def view_file(f, user, is_admin):
+    data = {
+        "file": f,
+        "user": user,
+        "is_admin": is_admin,
+    }
+    return render("view_file.html", data)
+
+
 def view_image_list(lst, user, is_admin):
     data = {
         "images": lst,
@@ -271,36 +265,10 @@ def view_image_list(lst, user, is_admin):
     }
     return render("image_list.html", data)
 
-
-def view_diff(r1, r2, user, is_admin):
-    a = r1.revision_body
-    if hasattr(r2, 'revision_body'):
-        b = r2.revision_body
-    else:
-        b = r2.body
-    seqm = difflib.SequenceMatcher(None, a, b)
-    output = []
-    for opcode, a0, a1, b0, b1 in seqm.get_opcodes():
-        if opcode == 'equal':
-            output.append(seqm.a[a0:a1])
-        elif opcode == 'insert':
-            output.append("<ins>" + seqm.b[b0:b1] + "</ins>")
-        elif opcode == 'delete':
-            output.append("<del>" + seqm.a[a0:a1] + "</del>")
-        elif opcode == 'replace':
-            output.append("<del>" + seqm.a[a0:a1] + "</del>")
-            output.append("<ins>" + seqm.b[b0:b1] + "</ins>")
-        else:
-            raise RuntimeError, "unexpected opcode"
+def view_file_list(lst, user, is_admin):
     data = {
-        "r1": r1,
-        "r2": r2,
-        "r1updated": r1.updated if hasattr(r1, 'updated') else r1.created,
-        "r2updated": r2.updated if hasattr(r2, 'updated') else r2.created,
-        "page_title": r2.title,
-        "diff_html": ''.join(output),
+        "files": lst,
         "user": user,
-        "is_admin": is_admin,
-        'can_edit': access.can_edit_page(r2.title, user, is_admin),
+        "is_admin": is_admin
     }
-    return render("diff.html", data)
+    return render("file_list.html", data)
