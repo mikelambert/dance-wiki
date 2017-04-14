@@ -1,18 +1,4 @@
-GAE Wiki
-========
+Make sure to:
 
-This is a simple wiki engine for Google App Engine.
+pip install -r requirements.txt -t lib/
 
-
-Contributors
-============
-
-See gaewiki/AUTHORS
-
-
-License
-=======
-
-The wiki itself is distributed under GNU GPL v3.
-
-pytz is distributed under the MIT license.
