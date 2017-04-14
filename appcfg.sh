@@ -1,1 +1,1 @@
-appcfg.py --application dancedeets-hrd "$@"
+appcfg.py --application dance-wiki "$@"

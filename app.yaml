@@ -11,7 +11,7 @@ handlers:
   static_files: gaewiki/static/favicon.ico
   upload: gaewiki/static/favicon.ico
 - url: .*
-  script: gaewiki
+  script: gaewiki.application
 
 #- url: /static/
 #  static_dir: static

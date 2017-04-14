@@ -21,3 +21,6 @@ def namespace_manager_default_namespace_for_request():
     # name = os.environ['SERVER_NAME']
     name = namespace_manager.google_apps_namespace()
     return name
+
+from google.appengine.ext import vendor
+vendor.add('lib')
